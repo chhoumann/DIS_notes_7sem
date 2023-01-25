@@ -10,3 +10,256 @@
 % 		- Correlation matrix, Scatter plot
 
 \section{Data Preparation and Exploration}
+\begin{itemize}
+\item
+  Data needs to be prepared according to the tools you will use on them.
+\item
+  Preparing data involves cleaning, extracting and selecting useful
+  features.
+\item
+  Apache Spark\textquotesingle s MLLib provides API to help with this
+  preparation process (and further!)
+\item
+  Some central concepts are \textbf{transformers and estimators}.
+
+  \begin{itemize}
+    \item
+    \textbf{Transformers} help us format data to a useful format. With
+    MLLib, just call \texttt{transformer.transform(df)}.
+
+    \begin{itemize}
+        \item
+      Give example?
+    \end{itemize}
+  \item
+    \textbf{Estimators} can also help us prepare input data.
+    They\textquotesingle re similar to transformers, but need to
+    \textbf{fit} the data first (initialization), and then
+    \textbf{transform}.
+
+    \begin{itemize}
+        \item
+      For example, if you need to normalize data e.g. with the
+      \texttt{StandardScaler} which uses the mean and standard
+      deviation, you need to do it over multiple passes...
+      can\textquotesingle t calculate the mean as you are transforming.
+    \item
+      I.e. it computes values that are preliminary to do the scaling
+      computation during fitting, and then does the scaling computation
+      during transformation.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Data cleaning} is necessary because data is usually dirty. So
+  how do we do it?
+
+  \begin{itemize}
+    \item
+    \textbf{Remove missing data}---e.g. removing rows with missing data
+    (nulls). E.g. \texttt{dropna()}.
+  \item
+    \textbf{Impute missing data}---replacing / inserting values where
+    there are none. E.g. \texttt{fillna()} to use fixed value, or
+    \texttt{imputer} to use mean/median/mode.
+  \item
+    \textbf{Handling duplicate data}---deleting duplicate rows
+    (full/partial), or merging (partial) duplicates. E.g.
+    \texttt{dropDuplicate()}.
+  \item
+    \textbf{Handle invalid data}---need either external data source or
+    domain knowledge/reasoning to fix poor/wrong data.
+  \end{itemize}
+\item
+  Now to how we can \textbf{represent data or labels}
+
+  \begin{itemize}
+    \item
+    \textbf{Continuous features}---numbers from {\(- \infty\)} to
+    {\(\infty\)}.
+
+    \begin{itemize}
+        \item
+      Usually don\textquotesingle t deal with it, but can use
+    \item
+      \textbf{Bucketing}---converting to categorical features using
+      thresholds.
+    \item
+      \textbf{Normalization}---which is important if various cont.
+      features use different scales.
+    \end{itemize}
+  \item
+    \textbf{Categorical features}---these are discrete numbers, but we
+    need to make them actual numbers so our algorithms can work with
+    them.
+
+    \begin{itemize}
+        \item
+      Commonly use indexing to convert categorical feature to numerical.
+    \item
+      E.g. the \texttt{OneHotEncoder}.
+    \end{itemize}
+  \item
+    \textbf{Text data}---mostly focusing on free-form text, as string
+    categorical vars are handled above. Here are the primary operations:
+
+    \begin{itemize}
+        \item
+      \textbf{Cleaning text:} tokenization (\& removing stop words,
+      finding word combinations, converting text to data)
+
+      \begin{itemize}
+            \item
+        \textbf{Tokenization}: MLLib provides transformer
+        \texttt{Tokenizer} and \texttt{regexTokenizer} to do this.
+
+        \begin{itemize}
+                \item
+          \texttt{Tokenizer} splits by whitespace.
+        \item
+          \texttt{regexTokenizer} splits based on regex.
+        \end{itemize}
+      \item
+        \textbf{Removing stop words}, i.e. "the" and "and".
+
+        \begin{itemize}
+                \item
+          \texttt{StopWordsRemover} is a transformer provided by MLLib.
+        \end{itemize}
+      \item
+        \textbf{Word combination}: in a sentence, combinations of words
+        usually makes more sense for analysis that a set of individual
+        words. "big apple" says more than "big", and "apple".
+
+        \begin{itemize}
+                \item
+          MLLib provides transformer \texttt{NGram}. Usually used after
+          tokenization and/or removing stop words.
+        \item
+          Basically that would convert the tokens into pairs of {\(n\)}
+          tokens
+        \end{itemize}
+      \end{itemize}
+    \item
+      \textbf{Converting to number data:} word2vec (advanced)
+
+      \begin{itemize}
+            \item
+        Now we need to convert text to numerical features. MLLib
+        provides \texttt{CountVectorizer} and \texttt{Word2Vec}.
+      \item
+        \textbf{Word2Vec} is a deep learning-based tool to compute a
+        vector representation for a set of words.
+
+        \begin{itemize}
+                \item
+          It\textquotesingle s a blackbox representation, so
+          representation rule isn\textquotesingle t deterministic, but
+          has superior performance in many NLP tasks.
+        \item
+          Using w2v, a neural net will be trained on the dataset.
+        \item
+          MLLib provides estimator for this (fit then transform).
+        \end{itemize}
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Feature extraction}---techniques to derive \emph{new} features
+  from raw data.
+
+  \begin{itemize}
+    \item
+    \textbf{Principal Component Analysis
+    (PCA)}---dimensionality-reduction method, reducing number of
+    features in a dataset.
+
+    \begin{itemize}
+        \item
+      Goal: Simplify data without losing too much information. For
+      example, you can merge several correlated features into one.
+    \item
+      MLLib has estimator.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Feature selection}---to evaluate and select important features
+  (not deriving new ones).
+
+  \begin{itemize}
+    \item
+    \textbf{Chi-Square}---test \emph{independence hypothesis} (features
+    and labels are independent) by checking p-value. If under threshold,
+    assume it\textquotesingle s false---so we think features and labels
+    are dependent (good because then we can use feature to predict
+    label).
+  \end{itemize}
+\item
+  \textbf{Data exploration}
+
+  \begin{itemize}
+    \item
+    \textbf{Univariate analysis}---data exploration with only one
+    variable
+
+    \begin{itemize}
+        \item
+      \textbf{Statistics}---seeing e.g. count, mean, stddev, 25\%, min,
+      etc.
+    \item
+      \textbf{Histogram}---approximation of distribution of numerical
+      data. First bucket (divide entire range of values into series of
+      bins), then count how many values fall into each range.
+
+      \begin{itemize}
+            \item
+        Used for continuous data. Seeing rectangles of adjacent bins
+        touching each other indicate the original variable is
+        continuous.
+      \end{itemize}
+    \item
+      \textbf{Box/violin plot}---describes data distribution over
+      quartiles
+
+      \begin{itemize}
+            \item
+        Similar to box plots, but also show probability desity of data
+        at different values. Used for continuous data.
+      \end{itemize}
+    \item
+      \textbf{Bar/pie chart}---presents categorical data with
+      rectangular bars.
+
+      \begin{itemize}
+            \item
+        And pie charts also presents proportions.
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Multivariate analysis}---data exploration with multiple
+    variables
+
+    \begin{itemize}
+        \item
+      \textbf{Correlation matrix}---table of correlation coefficients
+      betwen all possible pairs of values.
+
+      \begin{itemize}
+            \item
+        Between {\(- 1\)} and {\(1\)}
+      \item
+        Positive/negative to indicate correlation (pos/neg corr)
+      \item
+        Zero means 0 correlation
+      \item
+        Only for continuous (?)
+      \end{itemize}
+    \item
+      \textbf{Scatter plot}---represent values for two different numeric
+      variables. Helps observe relationships.
+    \item
+      \textbf{Line chart}---represents relationship between a
+      categorical and continuous variable. (E.g. day of week v. sales
+      volume)
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
