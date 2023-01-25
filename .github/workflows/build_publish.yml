@@ -1,6 +1,5 @@
 name: 'Build LaTeX Document'
-on:
-  push
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,8 +19,13 @@ jobs:
           github-token: ${{ secrets.github_token }}
       - name: Run Tectonic
         run: tectonic -X build
-      - name: Upload PDF
-        uses: actions/upload-artifact@v3
+      - name: Release
+        uses: ncipollo/release-action@v1
         with:
-          name: main
-          path: build/default/default.pdf
+          artifacts: "build/default/default.pdf"
+          name: ${{ github.event.head_commit.message }}
+      # - name: Upload PDF
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: main.pdf
+      #     path: build/default/default.pdf
