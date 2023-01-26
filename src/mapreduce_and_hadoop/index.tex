@@ -8,3 +8,144 @@
 
 
 \section{MapReduce and Hadoop}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  2 ways to scale, horizontal and vertical. Vertical is fast but
+  limited. Horizontal is very fast but you need to deal with race
+  conditions, deadlocks, node failures, etc.
+\item
+  For horizontal scaling, ideally, we want a system that scales linearly
+  with data / size of cluster.
+\item
+  These requirements were the motivation for \textbf{MapReduce}.
+
+  \begin{itemize}
+    \item
+    MR handles partitioning, scheduling, failures, etc. So users can
+    focus on computations.
+  \item
+    But it's made by Google and isn't open source, so Apache Hadoop's
+    MapReduce is a popular alternative.
+  \end{itemize}
+\item
+  \textbf{Map} and \textbf{Reduce}
+
+  \begin{itemize}
+    \item
+    With MR, you only need to specify 2 functions: \textbf{map} and
+    \textbf{reduce}.
+  \item
+    The two functions take key/value pairs as input and produces another
+    set of key/value pairs as output.
+  \item
+    \textbf{Map} takes an input pair and produces a set of intermediate
+    key/value pairs.
+
+    \begin{itemize}
+        \item
+      The system then groups all intermediate pairs with the same key.
+    \end{itemize}
+  \item
+    \textbf{Reduce} takes these keys and the accompanying list of values
+    and merges the values to form a smaller set (often empty or with a
+    single value, e.g.~summing/averaging).
+  \end{itemize}
+\item
+  \textbf{Example: Word Count}
+\end{itemize}
+
+\begin{verbatim}
+# key is e.g. doc name; value is doc content
+map(String key, String value):
+    foreach word in value:
+        EmitIntermediate(word, 1)
+
+reduce(String key, Iterator<int> values):
+    int result = 0;
+    foreach v in values:
+        result += v;
+ 
+    Emit(result);
+\end{verbatim}
+
+\begin{itemize}
+\item
+  \textbf{How the framework works}
+
+  \begin{itemize}
+    \item
+    Map invocations are distributed across many machines---they run
+    concurrently.
+  \item
+    To facilitate this, input is \textbf{partitioned} in logical splits
+    so it can be processed in parallel.
+
+    \begin{itemize}
+        \item
+      Input data is stored in distributed file system
+    \end{itemize}
+  \item
+    MapReduce system tries to schedule the map task to the node where
+    the data is located, which is called \textbf{data locality}.
+  \item
+    Intermediate pairs produced by map are also partitioned
+  \item
+    Reduce invocations can also be distributed, but doesn't run until
+    all map tasks are done.
+
+    \begin{itemize}
+        \item
+      Intermediate results with same key should be sent to same reducer.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Hadoop} uses \textbf{YARN} to handle the issues mentioned
+  earlier
+
+  \begin{itemize}
+    \item
+    YARN = Yet Another Resource Negotiator.
+  \item
+    YARN is used for cluster resource management.
+  \item
+    It has a resource manager per cluster and a node manager per node.
+  \item
+    Uses containers to run processes, each having some memory and CPU.
+  \item
+    \textbf{When resources are requested}, locality constraints can be
+    given---such as \emph{Data locality}, which means that jobs should
+    be run in the same location as the data (seen earlier).
+
+    \begin{itemize}
+        \item
+      If that isn't possible, they should at least run in the same
+      server rack to avoid network bottlenecks.
+    \item
+      If YARN cannot find a good resource immediately, it can wait for
+      resources to be freed.
+    \end{itemize}
+  \item
+    \textbf{Resource assignment:}
+
+    \begin{itemize}
+        \item
+      The job is submitted to YARN, which creates a container and starts
+      the application master for MapReduce.
+    \item
+      That requests a container for each map task.
+
+      \begin{itemize}
+            \item
+        When 5\% has finished, the application master starts to request
+        containers for reduce tasks, so they're ready when all are done.
+      \item
+        Container runs the task in dedicated JVM (Java VM) for isolation
+        of failures.
+      \item
+        Tasks report status and progress to application master.
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
