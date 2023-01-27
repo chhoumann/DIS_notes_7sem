@@ -11,3 +11,280 @@
 % Remember that there were several lectures about this. Not just lecture 1.
 
 \section{Multidimensional Databases}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  Multidimensional refers to a way of organizing and analyzing data.
+\item
+  Here, data is stored in a multi-layered, hierarchical structure.
+\item
+  \textbf{Multidimensional models} categorize data as being either facts
+  or dimensions
+
+  \begin{itemize}
+    \item
+    \textbf{Facts}, with associated numerical \emph{measures}, or
+
+    \begin{itemize}
+        \item
+      Facts are the important entity, e.g.~a sale
+    \item
+      Facts live in a multidimensional \textbf{cube}.
+    \end{itemize}
+  \item
+    \textbf{Measures} represent the fact property, e.g.~sales price
+
+    \begin{itemize}
+        \item
+      They have two components: the numerical value and an aggregation
+      formula (e.g.~SUM).
+    \end{itemize}
+  \item
+    \textbf{Dimensions} that describe facts. E.g. a sale with the
+    dimensions Product, Store, and Time.
+
+    \begin{itemize}
+        \item
+      Used for \textbf{selection} of data and \textbf{grouping} of data
+    \item
+      Consist of dimension values: e.g.~Product can have ``milk'',
+      ``cream'', \ldots, and time could have ``1/1/2001'', ``2/1/2001'',
+      \ldots{}
+    \item
+      They have hierarchies with levels. Typically 3-5 levels.
+
+      \begin{itemize}
+            \item
+        \textbf{Time}: Day → Month → Quarter → Year → T \textbar{}
+        (written bottom → top)
+      \end{itemize}
+    \item
+      Levels can have attributes. E.g. Day has Workday
+    \end{itemize}
+  \item
+    \textbf{Cubes} are where the data is organized into dimensions and
+    facts
+
+    \begin{itemize}
+        \item
+      Cubes consist of cells, which is a given combination of dimension
+      values (or empty).
+    \item
+      Can have many dimensions. \textgreater{} 3 then it can be called a
+      hypercube.
+
+      \begin{itemize}
+            \item
+        There's no limit, but it's usually 4-12.
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Complex issues: dimensions changing over time}
+
+  \begin{itemize}
+    \item
+    \textbf{Slowly changing dimensions:} infrequent changes. Mostly
+    regarding attribute values, but could be about adding more
+    attributes to the dimensions.
+
+    \begin{itemize}
+        \item
+      E.g. store changing size, products changing descriptions, etc.
+    \item
+      \textbf{Solutions}
+
+      \begin{itemize}
+            \item
+        Don't handle it; can lead to overwriting old values so losing
+        historical data.
+      \item
+        Version dimension values (e.g.~timestamps/create new)---leads to
+        larger dimension tables
+      \item
+        Capture previous and current (e.g.~two versions of attribute),
+        but then you don't know when the change happened.
+      \item
+        Split into changing and constant attribute.
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Rapidly changing dimensions:} dimensions change rapidly.
+
+    \begin{itemize}
+        \item
+      \textbf{Solutions}: 2 and 3 are here. Dimension splitting (4) is
+      good.
+    \item
+      So look at frequently changing attributes and separate those from
+      those that don't change as often. Then create two new
+      `minidimensions'.
+    \item
+      Then you can even optimize further: frequently changing
+      \emph{numeric} attributes can become discrete / banded values
+      (within a range). That leads to info loss, but that often happens
+      during analysis anyway.
+    \item
+      To maintain relationship between the new minidimensions, can add
+      surrogate keys for both into the fact table---so each new entry in
+      fact table you also get the surrogate key for each new dimension.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Relational representations}---how do we represent
+  multidimensional model with relational databases?
+
+  \begin{itemize}
+    \item
+    We do many-to-one relationships from facts to dimension values
+  \item
+    And many-to-one relationships from lower to higher levels in the
+    hierarchies
+  \item
+    We use \textbf{star schemas} or \textbf{snowflake schemas} with fact
+    tables and dimension tables.
+  \item
+    \textbf{Fact tables} store facts. One row for each. One column for
+    each measure. One column for each dimension, with a foreign key to
+    dimension table.
+  \item
+    \textbf{Dimension tables} store dimension data.
+  \item
+    \textbf{Star schema}
+
+    \begin{itemize}
+        \item
+      Has one fact table, for each business process.
+    \item
+      Has one de-normalized dimension table for each dimension with one
+      column for each level and attribute (except T).
+    \item
+      It's simple and easy to use, but hierarchies are hidden in the
+      columns, which hides the hierarchies. It has good performance, as
+      it's recognized by many RDBMSes.
+    \end{itemize}
+  \item
+    \textbf{Snowflake schema}
+
+    \begin{itemize}
+        \item
+      Dimensions are normalized (broken into multiple related tables).
+
+      \begin{itemize}
+            \item
+        Helps reduce data redundancy \& improves integrity.
+      \end{itemize}
+    \item
+      One dimension table per level.
+    \item
+      Each dimension table has an integer key, a level name, one column
+      per attribute, and a foreign key to the next level.
+    \item
+      Here, hierarchies are made explicit, but it has worse performance
+      and is harder to use due to many joins.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{OLAP Queries}
+
+  \begin{itemize}
+    \item
+    There are two kinds of queries:
+  \item
+    \textbf{Navigation queries}, which examine one dimension:
+
+    \begin{itemize}
+        \item
+      \texttt{SELECT\ DISTINCT\ l\ from\ d\ {[}WHERE\ p{]}}
+    \end{itemize}
+  \item
+    \textbf{Aggregation queries} that summarize fact data
+
+    \begin{itemize}
+        \item
+      \texttt{SELECT\ d1.l1,\ d2.l2,\ SUM(f.m)\ FROM\ d1,\ d2,\ f\ WHERE\ f.dk1\ =\ d1.dk1\ AND\ f.dk2\ =\ d2.dk2\ {[}AND\ p{]}\ GROUPO\ BY\ d1.l1,\ d2.l2}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Our project} focused on the business process of
+  \textbf{sales}.
+
+  \begin{itemize}
+    \item
+    \textbf{Two relevant questions:}
+
+    \begin{itemize}
+        \item
+      Which venue has the highest gross income?
+
+      \begin{itemize}
+            \item
+        To determine which can get more resources (new fridge, etc.) or
+        which to perhaps discontinue
+      \end{itemize}
+    \item
+      Which product has the highest gross income?
+
+      \begin{itemize}
+            \item
+        To determine wheter it would make sense to buy more /
+        discontinue a certain product
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Dimensional modeling}
+
+    \begin{itemize}
+        \item
+      Fact: measure is price of sale
+
+      \begin{itemize}
+            \item
+        Measure is additive across all dimensions as it's possible to
+        meaningfully aggregate across them
+      \item
+        Granularity: sales per hour per product name per venue name
+      \end{itemize}
+    \item
+      Dimensions: we want to consider when, what, and where. So
+      \textbf{product}, \textbf{time}, and \textbf{venue}.
+
+      \begin{itemize}
+            \item
+        \textbf{Product:} T → Category → Name
+
+        \begin{itemize}
+                \item
+          So we can query for all products, categories, or name
+        \item
+          \textbf{Product table}: Id (surrogate key), Name, Category
+        \end{itemize}
+      \item
+        \textbf{Time:} T → Year → Month → Day → Hour
+
+        \begin{itemize}
+                \item
+          and season only accessible to T and Hour
+        \item
+          \textbf{Time table:} Id (surrogate key), year, month, day,
+          hour, day name, season
+        \end{itemize}
+      \item
+        \textbf{Venue:} T → Type → Name
+
+        \begin{itemize}
+                \item
+          \textbf{Venue table:} Id (surrogate key), name, type
+        \end{itemize}
+      \end{itemize}
+    \end{itemize}
+  \item
+    We used \textbf{star schema} as we wanted to aggregate information
+    and didn't want to worry about details for individual transactions.
+  \item
+    \textbf{Analysis of case}---May was most selling month. May be
+    because semester projects finishing at that time (people
+    celebrate?). Best selling venue was web sales.
+  \end{itemize}
+\end{itemize}
+\end{multicols}
