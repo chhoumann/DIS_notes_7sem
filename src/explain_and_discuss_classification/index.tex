@@ -13,3 +13,161 @@
 % 		- Decision tree construction: information gain
 
 \section{Explain and Discuss Classification}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  Idea is to, given a data set and classes, define a mapping between
+  them.
+\item
+  \textbf{Classification} is \textbf{Supervised Learning}, where you try
+  to predict the class of a target based on observed predictor
+  attributes. So you need the class labels to train with.
+\item
+  On the other hand is \textbf{clustering}, which is
+  \textbf{unsupervised learning}. Meaning, you group similar data. Here,
+  you don't use labels.
+\item
+  \textbf{Concepts of classification}
+  \begin{itemize}
+    \item
+    The mapping fn is called a classifier
+  \item
+    We create it from training data and class labels.
+  \item
+    And we later test its performance on a test set.
+  \end{itemize}
+\item
+  \textbf{Classification in two steps}
+
+  \begin{itemize}
+    \item
+    \textbf{Learning step:} learn map fn \(y=f(X)\) from training set of
+    data tuples \(X\) and class labels \(y\).
+  \item
+    \textbf{Classification step:} use classifier on test set to check
+    accuracy.
+
+    \begin{itemize}
+        \item
+      Test set is independent of train set---so exposes model to new
+      data.
+    \item
+      Accuracy on the test set is the percentage of test tuples
+      correctly classified.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Classification techniques}
+
+  \begin{itemize}
+    \item
+    \textbf{Partitioning based}---divide whole space into several
+    subspaces. Any item in a subspace belongs to the associated class.
+  \item
+    \textbf{Distance-based}---calculate distance from each point to a
+    centroid and classify each point based on the centroid they are
+    nearest to.
+  \item
+    \textbf{Statistical methods}
+  \end{itemize}
+\item
+  \textbf{Measuring classification performance}
+
+  \begin{itemize}
+    \item
+    We can compare predicted values to true values.
+  \item
+    Given two classes, \(A\) and not \(A\), and an item, there are 4
+    cases. True/False Positive/Negative.
+  \item
+    True/False is whether classification result was correct or not.
+  \item
+    Positive/Negative was whether item was classified as \(A\) or not
+    \(A\).
+  \item
+    Then we define 3 metrics:
+
+    \begin{itemize}
+        \item
+      \textbf{Precision}---how often the positive classification is
+      correct: \(\frac{TP}{(TP+FP)}\).
+    \item
+      \textbf{Recall}---how many of the actual positive cases are
+      classified as positive: \(\frac{TP}{(TP+FN)}\).
+    \item
+      \textbf{Accuracy}---the fraction of the time when the classifier
+      gives correct classification: \(\frac{TP+TN}{(TP+FP+TN+FN)}\).
+    \end{itemize}
+  \item
+    \textbf{Confusion matrix} helps us see how often instances
+    misclassified.
+
+    \begin{itemize}
+        \item
+      Columns are predicted values.
+    \item
+      Rows are actual values.
+    \item
+      Diagonal = TP.
+    \item
+      All other values are errors.
+    \item
+      FN = errors along rows, except diagonal.
+    \item
+      FP = errors along columns, except diagonal.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Concrete approaches to classification}
+
+  \begin{itemize}
+    \item
+    \textbf{Distance-based: KNN}
+
+    \begin{itemize}
+        \item
+      Items are placed in the class to which they are closest. If closes
+      to \(K\) items in class \(A\), then placed in class \(A\).
+    \end{itemize}
+  \item
+    \textbf{Partitioning-based: Decision trees}
+
+    \begin{itemize}
+        \item
+      Divide seach space into regions. Items to be classified are places
+      in a class based on the region it's in.
+    \item
+      Algorithm makes a flowchart-like tree structure.
+
+      \begin{itemize}
+            \item
+        Internal nodes = partitioning criterion on an attribute.
+      \item
+        Each branch (partitioned region) = outcome of test.
+      \item
+        Each leaf node (terminal node) = class label.
+      \end{itemize}
+    \item
+      We construct the tree top down by recursively using an attribute
+      selection method to find the best split.
+
+      \begin{itemize}
+            \item
+        The best split is the one that minimized the expected number of
+        tests to classify a given tuple = we get a simpler tree.
+      \item
+        We use information gain to measure this. That's the purity
+        change before and after a partiton on an attribute.
+      \item
+        Highest information gain attribute is chosen as splitting
+        attribute.
+      \item
+        \textbf{Issue with information gain:} biased towards tests with
+        many outcomes (selects attributes having more values). Instead
+        we use information gain ratio. We normalize gain by the cost of
+        a split.
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
