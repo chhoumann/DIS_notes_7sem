@@ -6,3 +6,102 @@
 % 	- comparison with MapReduce/Hadoop
 
 \section{Spark and Hive}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  Apache Spark is used (with Hadoop) for large-scale data processing
+  using cluster computing.
+\item
+  \textbf{Benefit:} Fast as it does in-memory processing.
+\item
+  \textbf{Benefit:} It can keep datasets in memory between jobs, which
+  avoids the expensive I/O that MapReduce has.
+\item
+  \textbf{Benefit:} Considered easy to use.
+\item
+  Doesn't use MapReduce, but closely integrated with Hadoop---can use
+  YARN and HDFS.
+\item
+  \textbf{Spark uses Resilient Distributed Datasets (RDDs)}
+
+  \begin{itemize}
+    \item
+    Immutable partitioned record collections.
+  \item
+    RDDs are represented by objects with methods and RDDs can be
+    recomputed as needed or kept in memory.
+  \item
+    Can be created from a collection of objects, data in stable storage,
+    or transformations on existing RDDs.
+  \item
+    \textbf{RDDs have partitions}---which are atomic pieces of the
+    dataset.
+
+    \begin{itemize}
+        \item
+      Can be stored on different nodes.
+    \item
+      A RDD for a HDFS file has one partition per PDFS block and prefers
+      to have this partition on the same node as the HDFS block.
+    \end{itemize}
+  \item
+    Don't need to be materialized at all times---increasing performance.
+  \item
+    No replication of RDDs mean more space for them in memory.
+  \item
+    \textbf{Two categories of operations on RDDs}
+
+    \begin{itemize}
+        \item
+      \textbf{Transformations} generate new RDDs from existing ones.
+      E.g. map and filter.
+    \item
+      \textbf{Actions} trigger a computation on RDDs and do something
+      with the result. E.g. count and reduce.
+    \item
+      Transformations are lazy. So RDDs aren't computed until an action
+      is used (e.g.~result requested / data exported).
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Persistence and caching} is supported. RDDs can either be
+  (re-)computed for each action or persisted. By default RDDs are in
+  memory and only spills to disk if out of ram.
+
+  \begin{itemize}
+    \item
+    \textbf{Storage levels:} 5 levels, from memory only to hybrids (with
+    recompute) and to disk only. Or replication on multiple clusters.
+  \end{itemize}
+\item
+  \textbf{Hive}---basically data warehousing on MapReduce
+
+  \begin{itemize}
+    \item
+    Made by Facebook.
+  \item
+    Tries to solve issues with MapReduce: e.g.~it has high overhead as
+    it reads data often.
+  \item
+    Goal was to bring well-known concepts like tables to Hadoop and
+    enable the use of a SQL-like language.
+  \item
+    Users write SQL-like queries and Hive translates to MapReduce jobs.
+  \item
+    \textbf{Data model} = tables.
+  \item
+    \textbf{Data storage} = table stored in directory in HDFS.
+
+    \begin{itemize}
+        \item
+      Partitions stored as subdirectories. Values of partitioning keys
+      are stored in directory names.
+    \end{itemize}
+  \item
+    \textbf{Metastore}---stores metadata. Stored with RDBMS for low
+    latency.
+  \item
+    \textbf{Querying}---with HiveQL. Can do subqueries, joins, etc.
+  \end{itemize}
+\end{itemize}
+\end{multicols}
