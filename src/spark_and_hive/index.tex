@@ -11,11 +11,12 @@
 \item
   Apache Spark is used (with Hadoop) for large-scale data processing
   using cluster computing.
-\item
-  \textbf{Benefit:} Fast as it does in-memory processing.
+\item \textbf{Motivation:} MapReduce isn't good for cyclic dataflow (ML, iterative algos, etc.) as it's made for acyclic dataflow.
 \item
   \textbf{Benefit:} It can keep datasets in memory between jobs, which
   avoids the expensive I/O that MapReduce has.
+\item
+  \textbf{Benefit:} Fast as it does in-memory processing.
 \item
   \textbf{Benefit:} Considered easy to use.
 \item
