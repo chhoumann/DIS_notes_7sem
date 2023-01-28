@@ -8,3 +8,114 @@
 % Remember that you should be able to write small Spark SQL programs (pseudo code).
 
 \section{Spark SQL and ModelarDB}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  SparkSQL works with Spark
+\item
+  Provides DataFrame API on top of Spark with declarative, relational
+  operations.
+\item
+  Also added Catalyst optimizer.
+\item
+  \textbf{Using DataFrame API is much simpler. And allows for
+  optimizations.}
+
+  \begin{itemize}
+    \item
+    Users perform operations through expressions.
+  \item
+    These (e.g.~strings) are parsed by SPark.
+  \item
+    That builds AST.
+  \item
+    Result computed in Spark engine.
+  \item
+    Much better, because then Spark can optimize your queries for you!
+    Rather than defining own lambdas.
+  \end{itemize}
+\item
+  \textbf{Dataframes}
+
+  \begin{itemize}
+    \item
+    First,
+    \textbf{Dataset?}---\texttt{Dataset\textless{}T\textgreater{}}
+    =parameterinzed, distributed data collection with type safety.
+  \item
+    \textbf{Dataframe} is internally
+    \texttt{Dataset\textless{}Row\textgreater{}} where \texttt{Row} is
+    Spark's optimized format with data of Spark's own types.
+  \item
+    \textbf{Schemas} describe structure of DF / DS.
+  \end{itemize}
+\item
+  \textbf{Language constructs}
+
+  \begin{itemize}
+    \item
+    DataFrame API can be used in e.g.~Python
+  \item
+    Can do e.g.~\texttt{df.first()} to return first row
+  \item
+    Select with \texttt{df.select("col1",\ "col2")}
+  \item
+    Remove column with \texttt{df.drop("colname")}
+  \item
+    Filter rows \texttt{df.where(expr("col\textless{}5"))}
+  \item
+    \textbf{SQL support:} register DF as view, query with SQL.
+  \item
+    \textbf{Joins}:
+    \texttt{df1.join(df2,\ df1{[}"id"{]}\ ==\ df2{[}"val"{]})}
+  \item
+    \textbf{User defined functions:} UDFs allow users to make functions
+    and register them.
+  \end{itemize}
+\item
+  \textbf{Catalyst optimizer}
+
+  \begin{itemize}
+    \item
+    Task: optimizing queries.
+  \item
+    But also want to ensure extensibility (new techniques, features, or
+    external devs' extensions)
+  \end{itemize}
+\item
+  \textbf{Spark query planning} in 4 phases
+
+  \begin{itemize}
+    \item
+    \textbf{Analysis} to build plan from AST
+  \item
+    \textbf{Logical optimization} to e.g.~simplify booleans, fold
+    constants
+  \item
+    \textbf{Physical planning} where multiple plans are made and best is
+    chosen on cost-model
+  \item
+    \textbf{Code generation} to gen byte-code to run on JVM.
+  \end{itemize}
+\item
+  \textbf{ModularDB} = model-based time series management system
+
+  \begin{itemize}
+    \item
+    \textbf{Motivation:} industrial systems produce lots of data, and
+    high frequency data is great, but requires too much storage and fast
+    ingestion. So only aggregates are stored.
+  \item
+    \textbf{Solution:} store time series as models that approximates the
+    data
+  \item
+    Basically, models are fitted as data is ingested. Model is fitted
+    sequentially until error bound is exceeded.
+
+    \begin{itemize}
+        \item
+      Stored as finalized segments (temp whild building).
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
