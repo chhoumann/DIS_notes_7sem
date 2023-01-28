@@ -15,3 +15,225 @@
 % 	- Best-first search via R-tree
 
 \section{Spatial Data Indexing and Queries}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  \textbf{What is spatial data?}
+
+  \begin{itemize}
+    \item
+    Structured data is e.g.~a row for each transaction. It's based on a
+    schema.
+  \item
+    But that isn't good for maintaining spatial information. It would be
+    too hard to answer questions regarding spatial topics (distance,
+    etc.).
+  \item
+    Spatial data is how we store local data or shape information. Stored
+    in spatial DB, which is a normal DB with enhancements to represent
+    spatial objects (lines, points, polygons, etc.).
+  \item
+    The data is organized with indexing, which we'll get to. This allows
+    for efficient access to spatial objects.
+  \item
+    \textbf{Spatial objects} hold spatial information (e.g.~location,
+    geometry). Three types:
+
+    \begin{itemize}
+        \item
+      \textbf{Points}: Dimensionality isn't important, only location.
+      E.g. cities on a small-scale map.
+    \item
+      \textbf{Line segments and polylines}: objects whose lengths and
+      locations are of importance. E.g. roads \& rivers.
+    \item
+      \textbf{Polygons}: Objects whose shapes, locations, and areas
+      matter. E.g. forests, districts, a city area, etc.
+    \end{itemize}
+  \item
+    \textbf{Spatial relation} is a dataset, which is a collection of
+    spatial objects of the same type.
+  \end{itemize}
+\item
+  \textbf{R-Trees}---data structure used to index spatial data.
+
+  \begin{itemize}
+    \item
+    Need to understand \textbf{minimum bounding rectangles (MBRs)}
+    first.
+
+    \begin{itemize}
+        \item
+      Rectangles that have minimum area to cover a spatial object.
+    \end{itemize}
+  \item
+    \textbf{Root} contains pointer to largest region in spatial domain.
+  \item
+    \textbf{Internal nodes} contain info on MBRs at that level +
+    pointers to child nodes with regions overlapping the parent node's.
+  \item
+    \textbf{Leaf nodes} contain MBR info + object ID telling where
+    objects are stored in memory.
+  \end{itemize}
+\item
+  \textbf{R-Tree Insertion}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+    \item
+    Start at root and go down to ``best-fit'' leaf node \(L\).
+
+    \begin{itemize}
+        \item
+      Best fit = child whose area needs the least area enlargement to
+      fit the object. Resolve ties by going to child with smallest area.
+    \end{itemize}
+  \item
+    If the best-fit leaf \(L\) has space, insert entry (object) and
+    stop.
+  \item
+    Else, split \(L\) into \(L_{1}\) and \(L_{2}\).
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+        \item
+      Adjust entry for \(L\) in its parent so the MBR now covers
+      \(L_{1}\) only.
+    \item
+      Add entry in parent node of \(L\) for \(L_{2}\). (this could then
+      cause the parent node to recursively split).
+    \end{enumerate}
+  \item
+    Propagate changes upwards.
+  \end{enumerate}
+
+  \begin{itemize}
+    \item
+    \textbf{How to split:}
+
+    \begin{itemize}
+        \item
+      \textbf{Criterion:} entries in node \(L\) plus newly inserted
+      entry must be evenly distributed between \(L_{1}\) and \(L_{2}\).
+    \item
+      \textbf{Goal:} reduce likelihood of both \(L_{1}\) and \(L_{2}\)
+      being searched on subsequent queries and to redistribute so as to
+      minimize the sum of \(L_{1}\)'s area and \(L_{2}\)'s area.
+    \item
+      \textbf{Approaches:}
+
+      \begin{itemize}
+            \item
+        \textbf{Exhaustive split}---test all groupings and choose best
+        with least MBR enlargement.
+      \item
+        \textbf{Plane sweep}---move plane onto rectangles until 50\%
+        objects are covered, then split according to coverage.
+      \item
+        \textbf{Linear/quadratic split}---choose two objects as seeds
+        that are as far apart as possible. Then consider remaining
+        objects in random order and assign it to the node requiring the
+        smallest enlargement of its respective MBR.
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{R-Tree Deletion}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+    \item
+    Find leaf node \(N\) that contains entry \(E\).
+  \item
+    Remove \(E\) from \(N\).
+  \item
+    If \(N\) goes underflow:
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+        \item
+      Eliminate \(N\) by removing entry \(E_{N}\) from parent node and
+      add \(N\) to \(Q\) (set of eliminated nodes).
+    \end{enumerate}
+  \item
+    Otherwise, shrink \(N\)'s MBR accordingly.
+  \item
+    Propagate upwards.
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+        \item
+      Reinsert all entries of nodes in \(Q\) into the tree using
+      \texttt{Insert}.
+    \end{enumerate}
+  \end{enumerate}
+\item
+  Now to query the R-tree with spatial queries.
+\item
+  \textbf{Range query}---use query window to cover certain area. Find
+  objects by looking at intersecting/contained objects.
+
+  \begin{itemize}
+    \item
+    Knowing the size of the window, you can determien how far away an
+    object is from another.
+  \item
+    \textbf{Search via R-Tree}---start at root node.
+
+    \begin{itemize}
+        \item
+      If node isn't leaf, visit all MBR entries that intersect query
+      \(W\). Recurse on each of those nodes.
+    \item
+      If node is a leaf, visit each object that intersects query \(W\).
+      Test range query against exact geometry of the object. If still
+      intersecting, report object.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Nearest neighbor query}---to find the object nearest to a
+  query point.
+
+  \begin{itemize}
+    \item
+    \textbf{Straightforward solution}---just compare spatial object with
+    all objects in spatial relation and keep track of the one with the
+    least distance. Not a good solution.
+
+    \begin{itemize}
+        \item
+      Better is to use MINDIST. Consider MBR \(R\) with a number of
+      points, then \(MINDIST(p, R)\) is is the min distance between
+      \(p\) and \(R\).
+    \item
+      Meaning, it's the distance of the closest point in \(R\).
+    \item
+      \textbf{Three cases:}
+
+      \begin{itemize}
+            \item
+        \(p\) is inside \(R\), so \(MINDIST(p,R)=0\)
+      \item
+        \(p\) is beside of \(R\), so MINDIST is distance from \(p\) to
+        closest side.
+      \item
+        \(p\) is in corner space of \(R\), so MINDIST is found using
+        Pythagoras. Form triangle and calculate hypothenuse.
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Best-first NN Search}---by checking the most possible
+    candidates.
+
+    \begin{itemize}
+        \item
+      Use priority queue to organize seen entries and to prioritize the
+      next node to be visited.
+    \item
+      Always visits the closest one (from priority queue).
+    \item
+      When an object is seen from the priority queue, it's the NN.
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
