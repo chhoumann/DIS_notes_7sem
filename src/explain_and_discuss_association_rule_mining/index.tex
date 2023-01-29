@@ -9,3 +9,156 @@
 % 	- Rethinking Apriori algorithm: partitioning
 
 \section{Explain and Discuss Association Rule Mining}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  \textbf{What is the goal of association rule mining?} To find
+  correlations and associations between items in a
+  transactional/relational dataset.
+\item
+  \textbf{What is the motivation for association rule mining?} To do
+  market basket analysis. I.e. how likely is it that customers buying X
+  are also buying Y?
+
+  \begin{itemize}
+    \item
+    Helps retailers make decisions, e.g.~where to place items, what to
+    put on sale, etc.
+  \end{itemize}
+\item
+  \textbf{What is an association rule?}
+
+  \begin{itemize}
+    \item
+    An association rule correlates the presence of one set of items with
+    that of another set of items.
+  \end{itemize}
+\item
+  Formatted like: items set A \(\Rightarrow\) item set B
+  \([support, confidence]\)
+
+  \begin{itemize}
+    \item
+    Support \& confidence in percentages
+  \end{itemize}
+\item
+  \textbf{Support} = a rules items frequently appear in dataset
+
+  \begin{itemize}
+    \item
+    \(support(\{A\})\) is the percentage of itemsets that contains \(A\)
+  \end{itemize}
+\item
+  \textbf{Confidence} = a rule holds with high probability
+
+  \begin{itemize}
+    \item
+    \(conf(\{A\}\Rightarrow \{B\})\) is \# of itemsets with \(\{AB\}\)
+    divided by \# itemsets with \(\{A\}\).
+  \end{itemize}
+\item
+  If good support and confidence, then the rule is valid.
+\item
+  \textbf{Frequent itemset} = items that have support values larger than
+  a threshold (itemsets appear frequently).
+\item
+  \textbf{Steps of association rule mining}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+    \item
+    Find frequent itemsets (using support), e.g.~with apriori algorithm
+    (too many items to brute-force)
+  \item
+    Use frequent itemsets to generate association rules (using
+    confidence)
+  \end{enumerate}
+\item
+  \textbf{Apriori algorithm}
+
+  \begin{itemize}
+    \item
+    \textbf{Apriori principle}---any nonempty subsets of a frequent
+    itemset must also be frequent
+
+    \begin{itemize}
+        \item
+      Because if an itemset is frequent, so are its \emph{subsets}. And
+      if an item is infrequent, so are its \emph{supersets}.
+    \item
+      This makes the algorithm more efficient, as it can prune
+      infrequent itemsets.
+    \end{itemize}
+  \item
+    \textbf{Apriori algorithm}
+
+    \begin{enumerate}
+    \def\labelenumi{\arabic{enumi}.}
+        \item
+      Find all itemsets of size 1 fulfilling minimum support threshold
+    \item
+      \textbf{Join}---generate set of candidate \(k\)-itemsets \(C_{k}\)
+      by joining set of frequent itemsets \(L_{k}\) with itself.
+    \item
+      \textbf{Prune}---any \((k-1)\)-itemset that isn't frequent cannot
+      be a subset of a frequent \(k\)-itemset. So prune candidates with
+      at least one subset that isn't frequent.
+    \item
+      \textbf{Check support}---check support of remaining candidate
+      itemsets and only keep those over support threshold.
+    \end{enumerate}
+  \end{itemize}
+\item
+  Now we have frequent itemsets and their support. How to generate
+  association rules?
+
+  \begin{itemize}
+    \item
+    Generate association rules by calculating confidence for subsets of
+    all frequent itemsets and seeing if it's over confidence threshold.
+  \item
+    E.g. itemset \(l\) and subset \(s\), make rule \(s\Rightarrow l-s\)
+    if \(\frac{sup(l)}{sup(s)}\ge min\_conf\).
+  \end{itemize}
+\item
+  \textbf{Rethinking apriori}
+
+  \begin{itemize}
+    \item
+    Can use partitioning to increase performance on large datasets
+  \item
+    We divide the transaction table (dataset) into small subsets
+    (partitions)
+
+    \begin{itemize}
+        \item
+      Then process them separately
+    \item
+      This also allows for parallelization
+    \item
+      Partitions should fit in main memory
+    \item
+      Any frequent itemset must be frequent in at least one partition
+    \end{itemize}
+  \item
+    \textbf{Approaches}
+
+    \begin{itemize}
+        \item
+      \textbf{Partition, then run algorithm independently on each
+      subset}---then combine.
+    \item
+      \textbf{Distributed computing}---partition, run in parallel on
+      partitions, combine results.
+    \item
+      \textbf{Sampling}---Run on sampled dataset. Frequent itemsets
+      found can be used to estimate frequent datasets in entire set.
+
+      \begin{itemize}
+            \item
+        Reduces the size of the dataset.
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
