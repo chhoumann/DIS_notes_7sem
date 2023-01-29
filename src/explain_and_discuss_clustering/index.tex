@@ -9,3 +9,263 @@
 % - Criteria for evaluating clustering
 
 \section{Explain and Discuss Clustering}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  \textbf{Problem statement}
+
+  \begin{itemize}
+    \item
+    \textbf{Clustering} is about grouping similar data points in a
+    dataset.
+  \item
+    \textbf{Compared to classification:} clustering is unsupervised, so
+    we don't use labels.
+  \item
+    \textbf{Centroid}---Center of cluster (given by average of points).
+  \item
+    \textbf{Radius}---Average distance to centroid.
+  \item
+    \textbf{Diameter}---Average distance between two samples.
+  \end{itemize}
+\item
+  \textbf{Clustering techniques}
+\item
+  \textbf{Partitioning Clustering}
+
+  \begin{itemize}
+    \item
+    Nonhierarchical / not nested
+  \item
+    Create clusters in one step (not several)
+  \item
+    \textbf{K-Means Clustering}: Algorithm assigns each data point to
+    the cluster whose centroid it's closest to.
+
+    \begin{itemize}
+        \item
+      Pick \(k\) starting nodes as initial cluster centers
+    \item
+      Repeatedly form clusters by assing data points to closest
+      centroid, and then recompute the centroid.
+    \item
+      Do this until centroids no longer change.
+    \item
+      Commonly use Euclidean distance and want to minimize sum of
+      squared error (SSE).
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Hierarchical clustering}
+
+  \begin{itemize}
+    \item
+    Create clusters in levels, creating sets of clusters at each level.
+  \item
+    \textbf{Agglomerative clustering algorithms}---bottom-up approach
+    where each item is initially considered as a single-element cluster
+    and then iteratively merged.
+
+    \begin{itemize}
+        \item
+      Initial---each data point is individual cluster
+    \item
+      Compute distance matrix
+    \item
+      Iterate---merge two clusters with small enough distance / closest
+      and update matrix
+    \item
+      Repeat until one remains
+    \end{itemize}
+  \item
+    \textbf{Divisive clustering algorithms}---top-down approach where
+    each item is in one cluster initially and then successively divide
+    large clusters.==DO NOT INCLUDE==
+
+    \begin{itemize}
+        \item
+      Initial---each data point in single cluster
+    \item
+      Iterate---separate data points from cluster that have most
+      distance (not similar)
+    \item
+      In the end, left with \(n\) clusters
+    \end{itemize}
+  \item
+    \textbf{Dendogram}---data structure to show hierarchical clustering.
+    Each level shows clusters for that level.
+
+    \begin{itemize}
+        \item
+      Leaf = individual clusters
+    \item
+      Root = one cluster (enveloping all)
+    \item
+      Internal nodes at level \(i\) = collection of its children
+      clusters at level \(i+1\)
+    \end{itemize}
+  \item
+    \textbf{Linkage}---Defines proixmity between sets of observations.
+
+    \begin{itemize}
+        \item
+      \textbf{Maximim / complete linkage}---distance between two
+      clusters defined as max value of all pairwise distances between
+      elements in the clusters.
+    \item
+      \textbf{Minimum / single linkage}---distance between two clusters
+      defined as minimum value of all pairwise distances between
+      elements in clusters.
+    \item
+      \textbf{Average linkage}---distance between two clusters defined
+      as average distance between their elements.
+    \item
+      \textbf{Centroid or mean linkage}---distance between two clusters
+      defined as distance between centroid for cluster 1 and centroid
+      for cluster 2.
+    \item
+      \textbf{Ward linkage}---distance between two clusters is how much
+      sum of squares increases when merged.
+    \end{itemize}
+  \item
+    \textbf{BIRCH}--Balanced Iterative Reducing and Clustering using
+    Hierarchies
+
+    \begin{itemize}
+        \item
+      Clustering method using CF (Clustering Feature) tree to store
+      subclusters. Designed for large datasets.
+    \item
+      Each entry in CF tree contains info about one cluster.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Density-based Clustering}
+
+  \begin{itemize}
+    \item
+    \textbf{DBSCAN}---Density-Based Spatial Clustering of Applications
+    with Noise
+
+    \begin{itemize}
+        \item
+      Clusters together points that are closely packed together, and
+      separates points that are far apart.
+    \item
+      \textbf{Concepts}
+
+      \begin{itemize}
+            \item
+        \textbf{EPS}---user-specified parameter to specify radius of
+        neighborhood considered for each object.
+      \item
+        \textbf{MinPts}---minimum number of points in a cluster.
+      \item
+        \textbf{Eps-neighborhood}---space within radius eps centered at
+        an object.
+      \item
+        \textbf{Core point}---whose Eps-neighborhood is dense enough (\#
+        objects within ≥ MinPts).
+      \item
+        \textbf{Directly density-reachable}---point \(p\) directly
+        density-reachable from another point \(q\) if distance is ≤ Eps
+        and \(q\) is core point.
+      \item
+        \textbf{Density reachable}---point \(p\) is density-reachable
+        from point \(q\) if there is path between them and path consists
+        only of core points.
+      \item
+        \textbf{Density-connected}---two points \(p\) and \(q\) are
+        density-connected if there is point \(o\) so both \(p\) and
+        \(q\) are density-reachable from \(o\)
+      \end{itemize}
+    \item
+      \textbf{Process}
+
+      \begin{itemize}
+            \item
+        Select point at random from dataset
+
+        \begin{itemize}
+                \item
+          Get all points within distance of Eps from this point
+        \end{itemize}
+      \item
+        If Eps-neighborhood has at least MinPts objects
+
+        \begin{itemize}
+                \item
+          Create new cluster and add points within neighborhood to it
+        \end{itemize}
+      \item
+        Repeat for each point in cluster, adding if points are found to
+        be in it
+      \item
+        Repeat for all points in dataset
+
+        \begin{itemize}
+                \item
+          Any point not in a dense region is noise
+        \end{itemize}
+      \item
+        Repeat for all clusters
+
+        \begin{itemize}
+                \item
+          Clusters with less than MinPts points are noise.
+        \end{itemize}
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Criteria for evaluating clustering}
+
+  \begin{itemize}
+    \item
+    \textbf{We check for three things when doing evaluation of
+    clustering}
+
+    \begin{itemize}
+        \item
+      \textbf{Clustering tendency}---whether points are placed seemingly
+      randomly
+    \item
+      \textbf{Determine number of clusters in dataset}
+
+      \begin{itemize}
+            \item
+        \textbf{Elbow method}---by plotting sum of within-cluster
+        variance after increasing clusters, and checking when it bends.
+      \end{itemize}
+    \item
+      \textbf{Measure cluster quality}---two methods
+    \end{itemize}
+  \item
+    \textbf{When are clusters good?}
+
+    \begin{itemize}
+        \item
+      Nodes inside clusters are similar, but clusters are distinctive.
+    \end{itemize}
+  \item
+    \textbf{Intrinsic evaluation}---unsupervised
+
+    \begin{itemize}
+        \item
+      Evaluate quality of clustering based on characterstics of the
+      clustering itself. E.g. how compact, how separated.
+    \end{itemize}
+  \item
+    \textbf{Extrinsic evaluation}---supervised
+
+    \begin{itemize}
+        \item
+      Compare clusters obtained by algorithm to known ground truth
+    \item
+      Used when true class labels are known
+    \item
+      Common evaluation metrics: accuracy, precision, recall
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
