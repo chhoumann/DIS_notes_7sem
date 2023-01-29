@@ -6,3 +6,241 @@
 % 	- Handling of difficult issues, e.g., SCDs
 
 \section{ETL}
+\begin{multicols}{2}
+\begin{itemize}
+\item
+  \textbf{Extract} relevant data
+\item
+  \textbf{Transform} data to warehouse format
+
+  \begin{itemize}
+    \item
+    Build data warehouse keys, etc.
+  \item
+    Cleanse data
+  \item
+    Done in Data staging area (benefits include centralized backup,
+    easily restarted area, etc.). Not queryable by users.
+  \end{itemize}
+\item
+  \textbf{Load} into data warehouse
+
+  \begin{itemize}
+    \item
+    Build aggregates, etc.
+  \end{itemize}
+\item
+  \textbf{ETL Architecture}
+
+  \begin{itemize}
+    \item
+    \textbf{ETL side}
+  \item
+    Data is extracted from sources
+  \item
+    Send to data staging area for transformation
+  \item
+    \textbf{Then loaded into data warehouse (central).}
+  \item
+    Data warehouse has data marts with aggregate-only data and data
+    marts with atomic data, with a bus between them.
+  \item
+    \textbf{Query side}
+  \item
+    Where you do analysis, e.g.~data mining on the data or reporting.
+  \end{itemize}
+\item
+  \textbf{Extract}
+
+  \begin{itemize}
+    \item
+    Extraction strategy depends on type of data source.
+  \item
+    \textbf{Cooperative sources:}
+
+    \begin{itemize}
+        \item
+      Replicated source: publish/subscribe mechanism
+    \item
+      Call back source: calls external code (ETL) when changes occur
+    \item
+      Internal action source: only internal actions when changes occur
+      (e.g.~DB with triggers)
+    \end{itemize}
+  \item
+    \textbf{Non-cooperative sources}
+
+    \begin{itemize}
+        \item
+      Snapshot source: provices only full copy of source, e.g.~files
+    \item
+      Specific source: each is different, e.g.~legacy system
+    \item
+      Logged source: writes change log, e.g.~db log
+    \item
+      Queryable soruce: provides query interface, e.g.~RDBMS
+    \end{itemize}
+  \item
+    \textbf{Goal when extracting:} fast extraction.
+
+    \begin{itemize}
+        \item
+      One way is to only consider changes (deltas) since the last load.
+      This is called \emph{computing deltas}.
+    \item
+      Can also add \emph{audit timestamp} to source table to track when
+      delta was computed, but you need to make sure it's updated and
+      reliable.
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Transform}
+
+  \begin{itemize}
+    \item
+    \textbf{First ensure data in the warehouse has similar
+    representation}, depending on type.
+
+    \begin{itemize}
+        \item
+      \textbf{Data type conversions}
+
+      \begin{itemize}
+            \item
+        E.g. date/time format conversions, so it is uniform.
+      \end{itemize}
+    \item
+      \textbf{Normalization/denormalization}
+
+      \begin{itemize}
+            \item
+        To desired format: star schema, snowflake schema, etc
+      \end{itemize}
+    \item
+      \textbf{Building keys}
+
+      \begin{itemize}
+            \item
+        Table matches production keys to surrogate DW keys
+
+        \begin{itemize}
+                \item
+          Ensure production keys map to surrogate keys in DW
+        \end{itemize}
+      \item
+        Correct handling of history (e.g.~with type 2 dimensions,
+        especially for total reload)
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Then we need to ensure data is of certain quality}. There
+    are 5 criteria to aim for.
+
+    \begin{itemize}
+        \item
+      \textbf{Precise}: match data in prod db
+    \item
+      \textbf{Complete}: DW should have all relevant data
+    \item
+      \textbf{Consistent}: no contradictions or inconsistencies
+    \item
+      \textbf{Unique}: A thing is called the same thing everywhere and
+      should have the same key
+    \item
+      \textbf{Timely}: data is updated frequently to match needs of
+      users and the users know when the data has been updated
+    \end{itemize}
+  \item
+    \textbf{Lastly, cleansing the data.}
+
+    \begin{itemize}
+        \item
+      Handle inconsistent formats
+    \item
+      Remove unnecessary attributes
+    \item
+      Combine data from multiple sources with common (production)
+      key---e.g.~combining data from various departments
+    \item
+      \textbf{Different types of cleansing}
+
+      \begin{itemize}
+            \item
+        E.g. conversion \& normalization
+      \item
+        Rule-based cleansing
+      \item
+        ML-based cleansing \& others
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Load}---goal is to get data in the warehouse as fast as
+  possible
+
+  \begin{itemize}
+    \item
+    One way is by only loading in deltas.
+  \item
+    Also need to make decisions about how you load data in
+
+    \begin{itemize}
+        \item
+      Pipes/streams (fast) vs.~files (allows restart)
+    \end{itemize}
+  \item
+    Also need to consider how often you should load
+  \item
+    Need to ensure data consistency and referential integrity---so check
+    relations before loading.
+  \end{itemize}
+\item
+  \textbf{Tools: PDI / PygramETL}
+
+  \begin{itemize}
+    \item
+    Tools to facilitate the ETL process.
+  \item
+    Tradeoff: GUI vs.~code.
+  \item
+    \textbf{PDI}
+
+    \begin{itemize}
+        \item
+      Use Spoon tool to design flow.
+    \item
+      Transformations perform ETL tasks: steps with hops (paths) between
+      them.
+    \item
+      Jobs to orchestrate ETL activities, e.g.~fetching files
+    \end{itemize}
+  \item
+    \textbf{PygramETL}
+
+    \begin{itemize}
+        \item
+      Create ETL flow with code
+    \item
+      What we used in miniproject
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Our F-Klub miniproject}
+
+  \begin{itemize}
+    \item
+    The type of data source was non-cooperative, as it was a snapshot
+    source (CSV file).
+  \item
+    Used PygramETL to extract from multiple files with
+    \texttt{HashJoiningSource()}, which made it easy to manage columns
+    (can join on keys)
+  \item
+    Did transformation manually after loading into memory to ensure
+    correct data format \& to have an extra dimension to mark for
+    correct or abnormal data.
+  \item
+    Loaded into dimensions with \texttt{CachedDimensions()}
+  \end{itemize}
+\end{itemize}
+\end{multicols}
